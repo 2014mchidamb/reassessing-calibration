@@ -66,6 +66,44 @@ def get_preds(
     return torch.cat(preds)
 
 
+def get_logits_and_labels_stream(
+    model: torch.nn.Module,
+    dataset: datasets.IterableDataset,
+    transforms: Any,
+    cutoff: int = None,
+    device: str = "cpu",
+) -> Tuple[torch.FloatTensor, torch.LongTensor]:
+    """Gets model logits on a HuggingFace streaming dataset.
+
+    Args:
+        model (torch.nn.Module): Model to use.
+        dataset (datasets.IterableDataset): HuggingFace dataset.
+        transforms (Any): Transforms to apply to data.
+        cutoff (int, optional): Cutoff for dataset. Defaults to None.
+        device (str, optional): Device. Defaults to "cpu".
+
+    Returns:
+        Tuple[torch.FloatTensor, torch.LongTensor]: Logits, labels.
+    """
+    model.eval()
+    model.to(device)
+    logits, labels = [], []
+    seen = 0
+    with torch.no_grad():
+        for data in dataset:
+            img = data["jpg"].convert("RGB")
+            x, target = transforms(img).unsqueeze(0).to(device), data["cls"]
+            logits.append(model(x))
+            labels.append(target)
+            seen += 1
+            if cutoff is not None and seen == cutoff:
+                break
+
+    logits = torch.cat(logits)
+    labels = torch.LongTensor(labels).to(device)
+    return logits, labels
+
+
 def get_preds_and_labels_stream(
     model: torch.nn.Module,
     dataset: datasets.IterableDataset,
@@ -85,23 +123,8 @@ def get_preds_and_labels_stream(
     Returns:
         Tuple[torch.FloatTensor, torch.LongTensor]: Predictions, labels.
     """
-    model.eval()
-    model.to(device)
-    preds, labels = [], []
-    seen = 0
-    with torch.no_grad():
-        for data in dataset:
-            img = data["jpg"].convert("RGB")
-            x, target = transforms(img).unsqueeze(0).to(device), data["cls"]
-            preds.append(model(x))
-            labels.append(target)
-            seen += 1
-            if cutoff is not None and seen == cutoff:
-                break
-
-    preds = torch.nn.functional.softmax(torch.cat(preds), dim=1)
-    labels = torch.LongTensor(labels).unsqueeze(dim=1).to(device)
-    return preds, labels
+    logits, labels = get_logits_and_labels_stream(model, dataset, transforms, cutoff, device)
+    return torch.nn.functional.softmax(logits, dim=1), labels
 
 
 def get_binarized_preds_and_labels(

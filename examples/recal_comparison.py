@@ -2,11 +2,10 @@
 #SBATCH --job-name=cal_comp
 #SBATCH -t 24:00:00
 #SBATCH --mem=30G
-#SBATCH --gpus-per-node=A5000:1
+#SBATCH --gpus-per-node=v100:1
 
 import argparse
 import os
-import pickle
 import random
 import sys
 
@@ -22,7 +21,8 @@ from netcal.binning import HistogramBinning, IsotonicRegression
 from pathlib import Path
 
 from src.sharpcal.calibration import SharpCal
-from src.sharpcal.kernels import Gaussian1D, Epanechnikov1D
+from src.sharpcal.kernels import Gaussian1D
+from src.sharpcal.prediction import get_logits_and_labels_stream
 from src.sharpcal.recal import TemperatureScaler
 from src.sharpcal.scores import BrierScore, KL
 
@@ -45,19 +45,20 @@ np.random.seed(seed)
 
 # Calibration setup.
 kernel = Gaussian1D(bandwidth=args.bandwidth)
-#kernel = Epanechnikov1D(bandwidth=args.bandwidth)
 if args.score.lower() == "brier":
     score = BrierScore()
 else:
     score = KL()
+# Use cutoff for faster computation.
 sc = SharpCal(kernel=kernel, score=score, n_points=5000, device=device)
 
-# This all needs to not be hard-coded, but that's a problem for later.
+# Load model, dataset and compute logits/labels for dataset.
 model_name = "vit_base_patch16_224.augreg2_in21k_ft_in1k"
-model_path = f"results/{model_name}/{args.score}_{args.bandwidth}"
-Path(model_path).mkdir(parents=True, exist_ok=True)
-labels = pickle.load(open("stored_logits/vit_labels.p", "rb"))
-logits = pickle.load(open("stored_logits/vit_logits.p", "rb"))
+dataset = load_dataset("timm/imagenet-1k-wds", split="validation", streaming=True)
+model = timm.create_model(model_name, pretrained=True).to(device)
+data_config = timm.data.resolve_model_data_config(model)
+transforms = timm.data.create_transform(**data_config, is_training=False)
+logits, labels = get_logits_and_labels_stream(model, dataset, transforms, cutoff=1000, device=device)  # Cutoff to 1000 for example.
 
 # Calibration set.
 cal_cutoff = int(0.2 * len(logits))
@@ -67,6 +68,10 @@ cal_probs = torch.nn.functional.softmax(cal_logits, dim=1)
 # Test results.
 test_logits, test_labels = logits[cal_cutoff:], labels[cal_cutoff:]
 test_probs = torch.nn.functional.softmax(test_logits, dim=1)
+
+# Set up output path.
+model_path = f"results/{model_name}/{args.score}_{args.bandwidth}"
+Path(model_path).mkdir(parents=True, exist_ok=True)
 
 # Baseline.
 sc.plot_cal_curve(test_probs, test_labels.unsqueeze(dim=1), fname=f"{model_path}/baseline.jpg")

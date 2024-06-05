@@ -3,8 +3,8 @@ import numpy as np
 import torch
 
 from typing import Tuple
-from prediction import kernel_regression, get_binarized_preds_and_labels
-from scores import Score
+from .prediction import kernel_regression, get_binarized_preds_and_labels
+from .scores import Score
 
 
 class SharpCal:
@@ -105,7 +105,7 @@ class SharpCal:
 
         preds, labels = preds.to(self.device), labels.to(self.device)
         if preds.shape[1] > 1:
-            bin_preds, bin_labels = self.get_binarized_preds_and_labels(preds, labels)
+            bin_preds, bin_labels = get_binarized_preds_and_labels(preds, labels)
         else:
             bin_preds, bin_labels = preds, labels
         print(f"Model accuracy: {(bin_labels.sum() / len(bin_labels) * 100):.2f}")
