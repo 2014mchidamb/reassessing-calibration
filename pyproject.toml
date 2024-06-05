@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0", "cython", "numpy"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sharpcal"
+version = "0.0.1"
+authors = [
+  { name="Muthu Chidambaram" }
+]
+description = "Compute and plot calibration-sharpness diagrams."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = { file="LICENSE" }
+dependencies = [
+  "numpy>=1.26.4",
+  "scipy>=1.12.0",
+  "matplotlib>=3.5.1",
+  "torch>=1.10.2",
+  "datasets>=2.19.2",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/2014mchidamb/reassessing-calibration"
