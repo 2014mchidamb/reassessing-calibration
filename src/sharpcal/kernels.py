@@ -10,7 +10,7 @@ class Gaussian1D(torch.nn.Module):
         super().__init__()
         self.bandwidth = bandwidth
 
-    def forward(self, x: torch.FloatTensor) -> torch.FloatTensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return (
             1
             / (self.bandwidth * np.sqrt(2 * np.pi))
@@ -23,5 +23,5 @@ class Epanechnikov1D(torch.nn.Module):
         super().__init__()
         self.bandwidth = bandwidth
 
-    def forward(self, x: torch.FloatTensor) -> torch.FloatTensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return 3/(4 * self.bandwidth) * (1 - (x / self.bandwidth) ** 2) * (torch.abs(x / self.bandwidth) <= 1)

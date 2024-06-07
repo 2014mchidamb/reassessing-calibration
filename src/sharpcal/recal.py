@@ -34,22 +34,22 @@ class LogitScaler(ABC):
         self.name = "logit"
 
     @abstractmethod
-    def scale_logits(self, logits: torch.FloatTensor) -> torch.FloatTensor:
+    def scale_logits(self, logits: torch.Tensor) -> torch.Tensor:
         """Applies scaling method to logits.
 
         Args:
-            logits (torch.FloatTensor): Logits tensor.
+            logits (torch.Tensor): Logits tensor.
 
         Returns:
-            torch.FloatTensor: Rescaled/transformed logits.
+            torch.Tensor: Rescaled/transformed logits.
         """
         pass
 
-    def fit(self, logits: torch.FloatTensor, labels: torch.LongTensor) -> None:
+    def fit(self, logits: torch.Tensor, labels: torch.LongTensor) -> None:
         """Fits scaling method to provided logits and labels.
 
         Args:
-            logits (torch.FloatTensor): Logits computed over dataset.
+            logits (torch.Tensor): Logits computed over dataset.
             labels (torch.LongTensor): Labels for dataset.
         """
         logits, labels = logits.to(self.device), labels.to(self.device)
@@ -72,14 +72,14 @@ class LogitScaler(ABC):
         if self.log_results:
             print(f"Loss after {self.name} scaling: {criterion(self.scale_logits(logits), labels).item()}")
 
-    def predict_probs(self, logits: torch.FloatTensor) -> torch.FloatTensor:
+    def predict_probs(self, logits: torch.Tensor) -> torch.Tensor:
         """Predicts probabilities from logits after transforming.
 
         Args:
-            logits (torch.FloatTensor): Logits.
+            logits (torch.Tensor): Logits.
 
         Returns:
-            torch.FloatTensor: Probabilities.
+            torch.Tensor: Probabilities.
         """
         with torch.no_grad():
             return torch.nn.functional.softmax(self.scale_logits(logits.to(self.device)), dim=1)

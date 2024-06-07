@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-from typing import Tuple
+from typing import Any, Tuple
 from .prediction import kernel_regression, get_binarized_preds_and_labels
 from .scores import Score
 
@@ -13,14 +13,14 @@ class SharpCal:
         self,
         kernel: torch.nn.Module,
         score: Score,
-        n_points: int = 1000,
+        n_points: int = 5000,
         device: str = "cpu",
     ) -> None:
         """
         Args:
             kernel (torch.nn.Module): Kernel from kernels.py.
             score (Score): Score (Brier is the only fully supported one right now).
-            n_points (int, optional): Subsample data for faster/in-memory computations. Defaults to 1000.
+            n_points (int, optional): Subsample data for faster/in-memory computations. Defaults to 5000.
             device (str, optional): Device. Defaults to "cpu".
         """
         self.kernel = kernel
@@ -29,12 +29,12 @@ class SharpCal:
         self.device = device
         self.n_subsamples = 10  # Number of subsamples to average over if necessary.
 
-    def check_sizes(self, preds: torch.FloatTensor, labels: torch.LongTensor):
+    def check_sizes(self, preds: torch.Tensor, labels: torch.Tensor):
         """Checks that sizes of provided tensors are appropriate.
 
         Args:
-            preds (torch.FloatTensor): Predictions tensor.
-            labels (torch.LongTensor): Labels tensor.
+            preds (torch.Tensor): Predictions tensor.
+            labels (torch.Tensor): Labels tensor.
 
         Raises:
             ValueError: Preds and labels don't have the right shape.
@@ -48,19 +48,19 @@ class SharpCal:
             )
 
     def get_full_loss_and_cal(
-        self, preds: torch.FloatTensor, labels: torch.LongTensor
-    ) -> Tuple[float, float, float]:
+        self, preds: torch.Tensor, labels: torch.Tensor
+    ) -> Tuple[Any, Any, Any]:
         """Computes loss and calibration error, with optional subsampling.
         If self.n_points < len(preds), then data is subsampled to size self.n_points
         before computing calibration error. This is repeated self.n_subsample times, and the
         mean and standard deviation over these subsamples are returned alongside the full loss.
 
         Args:
-            preds (torch.FloatTensor): Predictions tensor.
-            labels (torch.LongTensor): Labels tensor.
+            preds (torch.Tensor): Predictions tensor.
+            labels (torch.Tensor): Labels tensor.
 
         Returns:
-            Tuple[float, float, float]: Full loss, calibration error averaged over subsamples, 
+            Tuple[Any, Any, Any]: Full loss, calibration error averaged over subsamples, 
             and 1 standard deviation for subsampling.
         """
         self.check_sizes(preds, labels)
@@ -92,13 +92,13 @@ class SharpCal:
         return total_loss, cal_mean, cal_std
 
     def plot_cal_curve(
-        self, preds: torch.FloatTensor, labels: torch.LongTensor, fname: str = None
+        self, preds: torch.Tensor, labels: torch.Tensor, fname: Any = None
     ) -> None:
         """Generates calibration-sharpness plot.
 
         Args:
-            preds (torch.FloatTensor): Predictions tensor.
-            labels (torch.LongTensor): Labels tensor.
+            preds (torch.Tensor): Predictions tensor.
+            labels (torch.Tensor): Labels tensor.
             fname (str, optional): Filename; if None, simply shows plot. Defaults to None.
         """
         self.check_sizes(preds, labels)
@@ -108,7 +108,6 @@ class SharpCal:
             bin_preds, bin_labels = get_binarized_preds_and_labels(preds, labels)
         else:
             bin_preds, bin_labels = preds, labels
-        print(f"Model accuracy: {(bin_labels.sum() / len(bin_labels) * 100):.2f}")
         x = torch.linspace(0, 1, self.n_points, device=self.device).unsqueeze(dim=1)
 
         # The conditional expectation here is E[Y = c(X) | h(X)].

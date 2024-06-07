@@ -6,17 +6,17 @@ from typing import Any, Tuple
 
 
 def kernel_regression(
-    x: torch.FloatTensor,
-    preds: torch.FloatTensor,
-    labels: torch.LongTensor,
+    x: torch.Tensor,
+    preds: torch.Tensor,
+    labels: torch.Tensor,
     kernel: torch.nn.Module,
-) -> Tuple[torch.FloatTensor, torch.FloatTensor]:
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """Estimates conditional expectation E[Y | Pred] using NW regression.
 
     Args:
-        x (torch.FloatTensor): Values at which to estimate conditional expectation.
-        preds (torch.FloatTensor): Predictions on dataset.
-        labels (torch.LongTensor): Labels for same dataset.
+        x (torch.Tensor): Values at which to estimate conditional expectation.
+        preds (torch.Tensor): Predictions on dataset.
+        labels (torch.Tensor): Labels for same dataset.
         kernel (torch.nn.Module): Kernel to use.
 
     Raises:
@@ -24,7 +24,7 @@ def kernel_regression(
         ValueError: x is not 2-dimensional.
 
     Returns:
-        Tuple[torch.FloatTensor, torch.FloatTensor]: Kernel regression estimates, kernel density estimates.
+        Tuple[torch.Tensor, torch.Tensor]: Kernel regression estimates, kernel density estimates.
     """
     if preds.shape != labels.shape:
         raise ValueError("Preds and labels need to have the same shape.")
@@ -38,20 +38,20 @@ def kernel_regression(
 
 def get_preds(
     model: torch.nn.Module,
-    data: torch.FloatTensor,
+    data: torch.Tensor,
     batch_size: int,
     device: str = "cpu",
-) -> torch.FloatTensor:
+) -> torch.Tensor:
     """Computes predictiosn of model on data.
 
     Args:
         model (torch.nn.Module): Model to use.
-        data (torch.FloatTensor): Data to consider.
+        data (torch.Tensor): Data to consider.
         batch_size (int): Batch size if data is large.
         device (str, optional): Device. Defaults to "cpu".
 
     Returns:
-        torch.FloatTensor: Predictions.
+        torch.Tensor: Predictions.
     """
     model.eval()
     model.to(device)
@@ -72,7 +72,7 @@ def get_logits_and_labels_stream(
     transforms: Any,
     cutoff: int = None,
     device: str = "cpu",
-) -> Tuple[torch.FloatTensor, torch.LongTensor]:
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """Gets model logits on a HuggingFace streaming dataset.
 
     Args:
@@ -83,7 +83,7 @@ def get_logits_and_labels_stream(
         device (str, optional): Device. Defaults to "cpu".
 
     Returns:
-        Tuple[torch.FloatTensor, torch.LongTensor]: Logits, labels.
+        Tuple[torch.Tensor, torch.Tensor]: Logits, labels.
     """
     model.eval()
     model.to(device)
@@ -100,7 +100,7 @@ def get_logits_and_labels_stream(
                 break
 
     logits = torch.cat(logits)
-    labels = torch.LongTensor(labels).to(device)
+    labels = torch.Tensor(labels).to(device)
     return logits, labels
 
 
@@ -110,7 +110,7 @@ def get_preds_and_labels_stream(
     transforms: Any,
     cutoff: int = None,
     device: str = "cpu",
-) -> Tuple[torch.FloatTensor, torch.LongTensor]:
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """Gets model predictions on a HuggingFace streaming dataset.
 
     Args:
@@ -121,24 +121,24 @@ def get_preds_and_labels_stream(
         device (str, optional): Device. Defaults to "cpu".
 
     Returns:
-        Tuple[torch.FloatTensor, torch.LongTensor]: Predictions, labels.
+        Tuple[torch.Tensor, torch.Tensor]: Predictions, labels.
     """
     logits, labels = get_logits_and_labels_stream(model, dataset, transforms, cutoff, device)
     return torch.nn.functional.softmax(logits, dim=1), labels
 
 
 def get_binarized_preds_and_labels(
-    preds: torch.FloatTensor,
-    labels: torch.LongTensor,
-) -> Tuple[torch.FloatTensor, torch.LongTensor]:
+    preds: torch.Tensor,
+    labels: torch.Tensor,
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """Converts predictions and labels to confidence calibration problem.
 
     Args:
-        preds (torch.FloatTensor): Model predictions (probabilities).
-        labels (torch.LongTensor): Labels.
+        preds (torch.Tensor): Model predictions (probabilities).
+        labels (torch.Tensor): Labels.
 
     Returns:
-        Tuple[torch.FloatTensor, torch.LongTensor]: Max probs, correctness labels.
+        Tuple[torch.Tensor, torch.Tensor]: Max probs, correctness labels.
     """
     max_probs = preds[torch.arange(len(preds)), preds.argmax(dim=1)].unsqueeze(dim=1)
     accs = (preds.argmax(dim=1, keepdims=True) == labels).long()
