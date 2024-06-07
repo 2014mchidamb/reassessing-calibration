@@ -2,6 +2,7 @@
 
 `sharpcal` is a simple (work-in-progress) library for making calibration-sharpness plots based on: https://arxiv.org/abs/2406.04068.
 ![](imgs/baseline.jpg)
+
 A quick guide on how to read the above plot:
 - The X-axis is model confidence, and the Y-axis is model accuracy conditional on confidence; the dashed line corresponds to a perfectly calibrated model.
 - The curve in red represents a kernel regression estimate of the conditional expectation of model accuracy conditioned on model confidence.
