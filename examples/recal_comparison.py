@@ -20,11 +20,11 @@ from huggingface_hub import login
 from netcal.binning import HistogramBinning, IsotonicRegression
 from pathlib import Path
 
-from sharpcal.calibration import SharpCal
-from sharpcal.kernels import Gaussian1D
-from sharpcal.prediction import get_logits_and_labels_stream
-from sharpcal.recal import TemperatureScaler
-from sharpcal.scores import BrierScore, KL
+from src.sharpcal.calibration import SharpCal
+from src.sharpcal.kernels import Gaussian1D
+from src.sharpcal.prediction import get_logits_and_labels_stream
+from src.sharpcal.recal import TemperatureScaler
+from src.sharpcal.scores import BrierScore, KL
 
 parser = argparse.ArgumentParser(description="Hyperparameters.")
 parser.add_argument("--score", dest="score", default="brier", type=str)

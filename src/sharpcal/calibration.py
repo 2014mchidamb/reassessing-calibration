@@ -14,14 +14,14 @@ class SharpCal:
         kernel: torch.nn.Module,
         score: Score,
         n_points: int = 5000,
-        device: str = "cpu",
+        device: Any = "cpu",
     ) -> None:
         """
         Args:
             kernel (torch.nn.Module): Kernel from kernels.py.
             score (Score): Score (Brier is the only fully supported one right now).
             n_points (int, optional): Subsample data for faster/in-memory computations. Defaults to 5000.
-            device (str, optional): Device. Defaults to "cpu".
+            device (Any, optional): Torch device. Defaults to "cpu".
         """
         self.kernel = kernel
         self.score = score

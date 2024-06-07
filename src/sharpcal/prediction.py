@@ -40,7 +40,7 @@ def get_preds(
     model: torch.nn.Module,
     data: torch.Tensor,
     batch_size: int,
-    device: str = "cpu",
+    device: Any = "cpu",
 ) -> torch.Tensor:
     """Computes predictiosn of model on data.
 
@@ -48,7 +48,7 @@ def get_preds(
         model (torch.nn.Module): Model to use.
         data (torch.Tensor): Data to consider.
         batch_size (int): Batch size if data is large.
-        device (str, optional): Device. Defaults to "cpu".
+        device (Any, optional): Torch device. Defaults to "cpu".
 
     Returns:
         torch.Tensor: Predictions.
@@ -71,7 +71,7 @@ def get_logits_and_labels_stream(
     dataset: datasets.IterableDataset,
     transforms: Any,
     cutoff: int = None,
-    device: str = "cpu",
+    device: Any = "cpu",
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Gets model logits on a HuggingFace streaming dataset.
 
@@ -80,7 +80,7 @@ def get_logits_and_labels_stream(
         dataset (datasets.IterableDataset): HuggingFace dataset.
         transforms (Any): Transforms to apply to data.
         cutoff (int, optional): Cutoff for dataset. Defaults to None.
-        device (str, optional): Device. Defaults to "cpu".
+        device (Any, optional): Torch device. Defaults to "cpu".
 
     Returns:
         Tuple[torch.Tensor, torch.Tensor]: Logits, labels.
@@ -109,7 +109,7 @@ def get_preds_and_labels_stream(
     dataset: datasets.IterableDataset,
     transforms: Any,
     cutoff: int = None,
-    device: str = "cpu",
+    device: Any = "cpu",
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Gets model predictions on a HuggingFace streaming dataset.
 
@@ -118,7 +118,7 @@ def get_preds_and_labels_stream(
         dataset (datasets.IterableDataset): HuggingFace dataset.
         transforms (Any): Transforms to apply to data.
         cutoff (int, optional): Cutoff for dataset. Defaults to None.
-        device (str, optional): Device. Defaults to "cpu".
+        device (Any, optional): Torch device. Defaults to "cpu".
 
     Returns:
         Tuple[torch.Tensor, torch.Tensor]: Predictions, labels.
