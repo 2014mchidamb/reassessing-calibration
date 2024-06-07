@@ -45,12 +45,12 @@ class LogitScaler(ABC):
         """
         pass
 
-    def fit(self, logits: torch.Tensor, labels: torch.LongTensor) -> None:
+    def fit(self, logits: torch.Tensor, labels: torch.Tensor) -> None:
         """Fits scaling method to provided logits and labels.
 
         Args:
             logits (torch.Tensor): Logits computed over dataset.
-            labels (torch.LongTensor): Labels for dataset.
+            labels (torch.Tensor): Labels for dataset.
         """
         logits, labels = logits.to(self.device), labels.to(self.device)
         if self.use_mse:

@@ -167,4 +167,4 @@ notebooks/data/
 
 slurm*
 
-stored_logits/
+results/

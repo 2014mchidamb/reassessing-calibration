@@ -100,7 +100,7 @@ def get_logits_and_labels_stream(
                 break
 
     logits = torch.cat(logits)
-    labels = torch.Tensor(labels).to(device)
+    labels = torch.LongTensor(labels).to(device)
     return logits, labels
 
 
