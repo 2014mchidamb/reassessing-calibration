@@ -17,6 +17,7 @@ pip install sharpcal
 # Getting Started
 The following example demonstrates the main utilities of `sharpcal` on some synthetic data.
 ```python
+import torch
 from sharpcal.calibration import SharpCal
 from sharpcal.kernels import Gaussian1D
 from sharpcal.scores import BrierScore
